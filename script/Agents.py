@@ -19,14 +19,14 @@ class ESAgent:
             bias : bias of network or None
         """
         if weights is not None:
-            self.weights = ?
+            self.weights = weights
         else:
-            self.weights = ?
+            self.weights = np.random.randn(16, 9)
 
         if bias is not None:
-            self.bias = ?
+            self.bias = bias
         else:
-            self.bias = ?
+            self.bias = np.random.randn(9,)
 
 
     def make_a_move(self,board):

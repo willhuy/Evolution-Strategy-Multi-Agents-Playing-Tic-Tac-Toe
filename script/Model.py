@@ -37,6 +37,30 @@ class Evolutionary_Model:
         Returns:
             best_agent (ESagent): _description_
         """
+
+        # Set the number of trials for evaluation
+        num_trials = 10
+
+        # Init the environment
+        epsilon = 0.5           # probability of the opponent make a random move, experimenting
+        env = TicTakToe(epsilon)
+
+        # Init population
+        population = self.initial_population()
+
+        # Enter loop
+        for epoch in range(max_epoch):
+            
+            # Evaluate the fitness of each agent in the population
+            for individual in population:
+                agent_fitness = self.evaluation(env, individual, num_trials)
+                
+                # Update the best agent if the current one is better
+                if agent_fitness > self.best_reward:
+                    self.best_reward = agent_fitness
+                    self.best_agent = copy.deepcopy(individual)
+           
+        
     
     def initial_population(self):
         """initilize first population
@@ -44,11 +68,26 @@ class Evolutionary_Model:
         Returns:
             population (ESAgent[]): Array of Agents
         """
+
+        population = []
+
+        for pop in range(self.max_pop):
+            parent = ESAgent()
+            population.append(parent)
+
+        return population
+        
     
     def evaluation(self,env,agent,num_trials):
         """
             evaluate the reward for each agent. feel free to have your own reward function.
         """
+
+        culmative_reward = 0
+
+        for _ in range(num_trials):
+            env.reset() # Reset the board 
+            
 
     def selection(self,rewards,population):
         """
@@ -64,3 +103,14 @@ class Evolutionary_Model:
 
             feel free to have your own evolution. In MLP case, you would like to add some noises to weights and bias.
         """
+
+    def reward_function(self,env):
+        """
+            reward function for each agent
+        """
+        if env.winner == Player.PLAYER1:
+            return 1    # Win
+        elif env.winner == Player.PLAYER2:
+            return -1   # Loose
+        else:
+            return 0    # Draw
