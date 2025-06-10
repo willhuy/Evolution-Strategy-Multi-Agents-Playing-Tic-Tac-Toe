@@ -52,10 +52,14 @@ class Evolutionary_Model:
         for epoch in range(max_epoch):
             
             # Evaluate the fitness of each agent in the population based on their rewards
+            agents_rewards = []
             for agent in population:
-                agent.reward = self.evaluation(env, agent, num_trials)
+                agent_reward = self.evaluation(env, agent, num_trials)
+                agents_rewards.append(agent_reward)
 
-                                
+            # Select best parent_percent to create parent pool based their culmulative rewards
+            parent_pool = self.selection(agents_rewards, population)
+                
 
     
     def initial_population(self):
@@ -83,9 +87,13 @@ class Evolutionary_Model:
 
         for _ in range(num_trials):
             env.reset() # Reset the board 
+
+            # Run the trial 
             while not env.terminate:
                 action = agent.make_a_move(env.board)
                 env.step(action)
+
+            # Get the reward for the current trial and append to culmul reward
             reward = self.reward_function(env)
             culmative_reward += reward
 
@@ -97,6 +105,10 @@ class Evolutionary_Model:
             select the best fit in the population. feel free to have your own selection.
             Make sure you select parent according to parent_percent
         """
+
+        max_parent_pool = int(self.max_pop * self.parent_percent)
+        parent_pool = []
+        while len(parent_pool) < max_parent_pool:
 
     def evolution(self,parents):
         """
