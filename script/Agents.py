@@ -28,6 +28,9 @@ class ESAgent:
         else:
             self.bias = np.random.randn(9,)
 
+        # Each agent keep track of its own reward
+        self.reward = 0
+
 
     def make_a_move(self,board):
         """make a move respect to current board state. You would like to use feature_construct function to convert board state to input features

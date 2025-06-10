@@ -38,7 +38,7 @@ class Evolutionary_Model:
             best_agent (ESagent): _description_
         """
 
-        # Set the number of trials for evaluation
+        # Set the number of trials for evaluation of each agent
         num_trials = 10
 
         # Init the environment
@@ -51,16 +51,12 @@ class Evolutionary_Model:
         # Enter loop
         for epoch in range(max_epoch):
             
-            # Evaluate the fitness of each agent in the population
-            for individual in population:
-                agent_fitness = self.evaluation(env, individual, num_trials)
-                
-                # Update the best agent if the current one is better
-                if agent_fitness > self.best_reward:
-                    self.best_reward = agent_fitness
-                    self.best_agent = copy.deepcopy(individual)
-           
-        
+            # Evaluate the fitness of each agent in the population based on their rewards
+            for agent in population:
+                agent.reward = self.evaluation(env, agent, num_trials)
+
+                                
+
     
     def initial_population(self):
         """initilize first population
@@ -87,7 +83,14 @@ class Evolutionary_Model:
 
         for _ in range(num_trials):
             env.reset() # Reset the board 
-            
+            while not env.terminate:
+                action = agent.make_a_move(env.board)
+                env.step(action)
+            reward = self.reward_function(env)
+            culmative_reward += reward
+
+        return culmative_reward / num_trials
+    
 
     def selection(self,rewards,population):
         """
