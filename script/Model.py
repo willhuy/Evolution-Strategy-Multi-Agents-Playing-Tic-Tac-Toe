@@ -58,7 +58,7 @@ class Evolutionary_Model:
                 agents_rewards.append(agent_reward)
 
             # Select best parent_percent to create parent pool based their culmulative rewards
-            #parent_pool = self.selection(agents_rewards, population)
+            parent_pool = self.selection(agents_rewards, population)
 
                 
 
@@ -106,13 +106,21 @@ class Evolutionary_Model:
             select the best fit in the population. feel free to have your own selection.
             Make sure you select parent according to parent_percent
         """
+        # Convert the population array to numpy array for ease of apply indices
+        pop_arr = np.array(population, dtype=object)
 
         # Calculate the max parent pool count based on the parent percentage
         max_parent_pool = int(self.max_pop * self.parent_percent)
 
-        # Get the sorted indicies from the rewards and use it to filter out best parent
-        sorted_reward_indices = np.argsort(rewards)
-        
+        # Get the sorted indicies from the rewards and use it to filter out best parent for parent pool
+        sorted_reward_idx = np.argsort(rewards)
+        sorted_population_by_rewards = pop_arr[sorted_reward_idx]
+        parent_pool = sorted_population_by_rewards[-max_parent_pool:]
+
+        return parent_pool
+
+
+
             
 
     def evolution(self,parents):
