@@ -109,9 +109,9 @@ class Evolutionary_Model:
             # Get the reward for the current trial and append to culmul reward of win, loss, draw
             result = self.reward_function(env)
 
-            if result == 1:
+            if result == Player.PLAYER1:
                 cul_win += 1
-            elif result == -1:
+            elif result == Player.PLAYER2:
                 cul_loss += 1
             else:
                 cul_draw += 1 
