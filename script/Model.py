@@ -51,15 +51,17 @@ class Evolutionary_Model:
         # Enter loop
         for epoch in range(max_epoch):
             
-            # Evaluate the fitness of each agent in the population based on their rewards
-            agents_rewards = []
-            for agent in population:
-                agent_reward = self.evaluation(env, agent, num_trials)
-                agents_rewards.append(agent_reward)
-
+            # Evaluate the fitness of each agent in the population based on their rewards of win, loss, draw
+            agents_rewards = np.zeros((self.max_pop, 3)).astype('int')
+            for idx, agent in enumerate(population):
+                win, loss, draw = self.evaluation(env, agent, num_trials)
+                agents_rewards[idx][0] = win
+                agents_rewards[idx][1] = loss
+                agents_rewards[idx][2] = draw
+                
                 # Keep track the current best performing agent
-                if agent_reward > self.best_reward:
-                    self.best_reward = agent_reward
+                if agents_rewards[idx][0] > self.best_reward:
+                    self.best_reward = agents_rewards[idx][0]
                     self.best_agent = copy.deepcopy(agent)
 
             # Select best parent_percent to create parent pool based their culmulative rewards
@@ -92,7 +94,9 @@ class Evolutionary_Model:
             evaluate the reward for each agent. feel free to have your own reward function.
         """
 
-        culmative_reward = 0
+        cul_win = 0
+        cul_loss = 0
+        cul_draw = 0
 
         for _ in range(num_trials):
             env.reset() # Reset the board 
@@ -102,11 +106,17 @@ class Evolutionary_Model:
                 action = agent.make_a_move(env.board)
                 env.step(action)
 
-            # Get the reward for the current trial and append to culmul reward
-            reward = self.reward_function(env)
-            culmative_reward += reward
+            # Get the reward for the current trial and append to culmul reward of win, loss, draw
+            result = self.reward_function(env)
 
-        return culmative_reward / num_trials
+            if result == 1:
+                cul_win += 1
+            elif result == -1:
+                cul_loss += 1
+            else:
+                cul_draw += 1 
+
+        return cul_win, cul_loss, cul_draw
     
 
     def selection(self,rewards,population):
@@ -147,8 +157,8 @@ class Evolutionary_Model:
         # Mutate process
         for parent in enumerate(parents):
             for _ in range(child_per_parent):
-                # Add Gaussian noise with std = 0.5
-                std = 0.5
+                # Add Gaussian noise with std = 0.05
+                std = 0.05
                 child_w = copy.deepcopy(parent.weights) + np.random.normal(scale=std)
                 child_b = copy.deepcopy(parent.bias) + np.random.normal(scale=std)
                 child = ESAgent(copy.deepcopy(parent.weights), copy.deepcopy(parent.bias))
