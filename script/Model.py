@@ -128,7 +128,7 @@ class Evolutionary_Model:
         # Calculate the max parent pool count based on the parent percentage
         max_parent_pool = int(self.max_pop * self.parent_percent)
 
-        # Get the sorted indicies from the rewards of winning and use it to filter out best parent for parent pool
+        # Get the sorted indicies in descending order from the rewards of winning and use it to filter out best parent for parent pool
         wins = rewards[:, 0]
         sorted_reward_idx = np.argsort(-wins)
         sorted_population = population[sorted_reward_idx]
@@ -147,24 +147,45 @@ class Evolutionary_Model:
         """
 
         # List of children
-        children = []
+        total_children = self.max_pop - len(parents)
+        children = np.empty(shape=total_children, dtype=object)
 
-        # Calc the number of child a parent should have
-        total_children = self.max_pop - len(parents) # this will make it scale with the number of parents selected
+        # Calc child per parent
         child_per_parent = total_children // len(parents)
+        children_remainder = total_children % len(parents) # in case there's a remainder
 
-        # Mutate process
-        for parent in enumerate(parents):
-            for _ in range(child_per_parent):
-                # Add Gaussian noise with std = 0.05
-                std = 0.05
-                child_w = copy.deepcopy(parent.weights) + np.random.normal(scale=std)
-                child_b = copy.deepcopy(parent.bias) + np.random.normal(scale=std)
-                child = ESAgent(copy.deepcopy(parent.weights), copy.deepcopy(parent.bias))
-                children.append(child)
+        ###### Mutate process ######
+
+        # Enumerate each parent, and create child_per_parent count
+        std = 0.05 # For Gaussian noise
+        i = 0 # For adding children
+
+        for idx, parent in enumerate(parents):
+            
+            if (children_remainder != 0) and (idx < children_remainder): # There is remainder, so we give each parent in the loop +1 children until the remainder is met
+                extra = 1
+            else:
+                extra = 0
+
+            child_count = child_per_parent + extra            
+            
+            for _ in range(child_count):
+
+                # Deep copy the parent weights and add Gaussian noise with zero mean and 0.05 std
+                child_w = copy.deepcopy(parent.weights)
+                child_w = child_w + std * np.random.randn(16,9)
+
+                # Same as weights
+                child_b = copy.deepcopy(parent.bias)
+                child_b = child_b + std * np.random.randn(9,)
+
+                # Create the new child ESAgent object with the new weights and bias, append it to the children list
+                child = ESAgent(child_w, child_b)
+                children[i] = child
+                i += 1
 
         # New population
-        new_pop = parents + children
+        new_pop = np.concatenate((parents, children))
 
         return new_pop
 
