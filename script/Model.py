@@ -80,11 +80,11 @@ class Evolutionary_Model:
             population (ESAgent[]): Array of Agents
         """
 
-        population = []
+        population = np.empty(shape=self.max_pop, dtype=object)
 
         for pop in range(self.max_pop):
             parent = ESAgent()
-            population.append(parent)
+            np.append(population, parent)
 
         return population
         
@@ -124,16 +124,15 @@ class Evolutionary_Model:
             select the best fit in the population. feel free to have your own selection.
             Make sure you select parent according to parent_percent
         """
-        # Convert the population array to numpy array for ease of apply indices
-        pop_arr = np.array(population, dtype=object)
 
         # Calculate the max parent pool count based on the parent percentage
         max_parent_pool = int(self.max_pop * self.parent_percent)
 
-        # Get the sorted indicies from the rewards and use it to filter out best parent for parent pool
-        sorted_reward_idx = np.argsort(rewards)
-        sorted_population_by_rewards = pop_arr[sorted_reward_idx]
-        parent_pool = sorted_population_by_rewards[-max_parent_pool:].toList() # MAYBE ERROR CAUSE TOLIST()
+        # Get the sorted indicies from the rewards of winning and use it to filter out best parent for parent pool
+        wins = rewards[:, 0]
+        sorted_reward_idx = np.argsort(-wins)
+        sorted_population = population[sorted_reward_idx]
+        parent_pool = sorted_population[:max_parent_pool]
 
         return parent_pool
 
