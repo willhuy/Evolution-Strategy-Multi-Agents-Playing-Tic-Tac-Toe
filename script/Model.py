@@ -57,11 +57,19 @@ class Evolutionary_Model:
                 agent_reward = self.evaluation(env, agent, num_trials)
                 agents_rewards.append(agent_reward)
 
+                # Keep track the current best performing agent
+                if agent_reward > self.best_reward:
+                    self.best_reward = agent_reward
+                    self.best_agent = copy.deepcopy(agent)
+
             # Select best parent_percent to create parent pool based their culmulative rewards
             parent_pool = self.selection(agents_rewards, population)
 
-                
+            # Create new population by generate new offsprings and the best parents
+            population = self.evolution(parent_pool)
 
+        # Return the best agent
+        return self.best_agent 
     
     def initial_population(self):
         """initilize first population
@@ -115,13 +123,10 @@ class Evolutionary_Model:
         # Get the sorted indicies from the rewards and use it to filter out best parent for parent pool
         sorted_reward_idx = np.argsort(rewards)
         sorted_population_by_rewards = pop_arr[sorted_reward_idx]
-        parent_pool = sorted_population_by_rewards[-max_parent_pool:]
+        parent_pool = sorted_population_by_rewards[-max_parent_pool:].toList() # MAYBE ERROR CAUSE TOLIST()
 
         return parent_pool
 
-
-
-            
 
     def evolution(self,parents):
         """
@@ -131,6 +136,29 @@ class Evolutionary_Model:
 
             feel free to have your own evolution. In MLP case, you would like to add some noises to weights and bias.
         """
+
+        # List of children
+        children = []
+
+        # Calc the number of child a parent should have
+        total_children = self.max_pop - len(parents) # this will make it scale with the number of parents selected
+        child_per_parent = total_children // len(parents)
+
+        # Mutate process
+        for parent in enumerate(parents):
+            for _ in range(child_per_parent):
+                # Add Gaussian noise with std = 0.5
+                std = 0.5
+                child_w = copy.deepcopy(parent.weights) + np.random.normal(scale=std)
+                child_b = copy.deepcopy(parent.bias) + np.random.normal(scale=std)
+                child = ESAgent(copy.deepcopy(parent.weights), copy.deepcopy(parent.bias))
+                children.append(child)
+
+        # New population
+        new_pop = parents + children
+
+        return new_pop
+
 
     def reward_function(self,env):
         """

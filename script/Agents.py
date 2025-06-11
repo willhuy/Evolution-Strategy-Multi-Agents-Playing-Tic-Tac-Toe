@@ -21,12 +21,12 @@ class ESAgent:
         if weights is not None:
             self.weights = weights
         else:
-            self.weights = np.random.randn(16, 9)
+            self.weights = np.random.uniform(-0.5, 0.5, size=(16,9)) # Keep in range from [-0.5, 0.5], suggestion from the given paper in the assignment description
 
         if bias is not None:
             self.bias = bias
         else:
-            self.bias = np.random.randn(9,)
+            self.bias = np.random.uniform(-0.5, 0.5, size=(9,))
 
 
     def make_a_move(self,board):
