@@ -42,11 +42,16 @@ class Evolutionary_Model:
         num_trials = 10
 
         # Init the environment
-        epsilon = 0.5           # probability of the opponent make a random move, experimenting
+        epsilon = 0.1           # probability of the opponent make a random move, experimenting
         env = TicTakToe(epsilon)
 
         # Init population
         population = self.initial_population()
+
+        agents_fitness = np.zeros(self.max_pop, dtype=float)
+
+        history_mean = []
+        history_best = []
 
         # Enter loop
         for epoch in range(max_epoch):
@@ -58,17 +63,31 @@ class Evolutionary_Model:
                 agents_rewards[idx][0] = win
                 agents_rewards[idx][1] = loss
                 agents_rewards[idx][2] = draw
-                
+
+                fitness = 1 * win + -1 * loss + 0 * draw 
+                agents_fitness[idx] = fitness
+
                 # Keep track the current best performing agent
-                if agents_rewards[idx][0] > self.best_reward:
-                    self.best_reward = agents_rewards[idx][0]
+                if fitness > self.best_reward:
+                    self.best_reward = fitness
                     self.best_agent = copy.deepcopy(agent)
 
+            history_mean.append(agents_fitness.mean())
+            history_best.append(self.best_reward)
+
             # Select best parent_percent to create parent pool based their culmulative rewards
-            parent_pool = self.selection(agents_rewards, population)
+            parent_pool = self.selection(agents_fitness, population)
 
             # Create new population by generate new offsprings and the best parents
             population = self.evolution(parent_pool)
+
+        epochs = range(1, len(history_mean) + 1)
+        plt.plot(epochs, history_mean, label='Average Fitness', color='blue')
+        plt.plot(epochs, history_best,  label='Best Fitness', color='orange')
+        plt.xlabel('Epoch')
+        plt.ylabel('Fitness')
+        plt.legend()
+        plt.savefig('fitness_over_time.png')
 
         # Return the best agent
         return self.best_agent 
@@ -82,9 +101,9 @@ class Evolutionary_Model:
 
         population = np.empty(shape=self.max_pop, dtype=object)
 
-        for pop in range(self.max_pop):
+        for idx in range(self.max_pop):
             parent = ESAgent()
-            np.append(population, parent)
+            population[idx] = parent
 
         return population
         
@@ -128,9 +147,8 @@ class Evolutionary_Model:
         # Calculate the max parent pool count based on the parent percentage
         max_parent_pool = int(self.max_pop * self.parent_percent)
 
-        # Get the sorted indicies in descending order from the rewards of winning and use it to filter out best parent for parent pool
-        wins = rewards[:, 0]
-        sorted_reward_idx = np.argsort(-wins)
+        # Get the sorted indicies in descending order from the fitness and use it to filter out best parent for parent pool
+        sorted_reward_idx = np.argsort(-rewards)
         sorted_population = population[sorted_reward_idx]
         parent_pool = sorted_population[:max_parent_pool]
 
@@ -173,11 +191,11 @@ class Evolutionary_Model:
 
                 # Deep copy the parent weights and add Gaussian noise with zero mean and 0.05 std
                 child_w = copy.deepcopy(parent.weights)
-                child_w = child_w + std * np.random.randn(16,9)
+                child_w = child_w + std * np.random.randn(*parent.weights.shape)
 
                 # Same as weights
                 child_b = copy.deepcopy(parent.bias)
-                child_b = child_b + std * np.random.randn(9,)
+                child_b = child_b + std * np.random.randn(*parent.bias.shape)
 
                 # Create the new child ESAgent object with the new weights and bias, append it to the children list
                 child = ESAgent(child_w, child_b)

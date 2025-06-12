@@ -40,6 +40,30 @@ class ESAgent:
 
         """
 
+        # Get the board state
+        game_state = feature_construct(board)
+
+        # Decision ouput
+        net = game_state.dot(self.weights) + self.bias
+
+        # Apply sigmoid
+        y = 1.0 / (1.0 + np.exp(-net))
+
+        # Define a mask
+        game_state_flatted = board.flatten()   # shape 9x1
+        mask = (game_state_flatted == 0).astype(float)              # game_state_flatted == 0 will return True or False, convert to float will give 0 if cell is zero, 1 if cell is not zero
+        
+        # Apply the mask to y
+        y *= mask
+
+        # Get the indexes of all the legal cells
+        legal_cell_idxs = np.nonzero(mask)[0]   # [0] because nonzero return a tuple
+        best_val   = y[legal_cell_idxs].max()   # Get
+        best_moves = legal_cell_idxs[y[legal_cell_idxs] == best_val]
+
+        return int(np.random.choice(best_moves))
+
+
 
 # dont change any code after this
 class RuleBaseAgent:

@@ -9,6 +9,7 @@ cache:
 
 before_script:
   - pip install -r requirements.txt  # For debugging
+  - pip install matplotlib           # I add this if fix the pipeline, remove if you want
 
 stages:          # List of stages for jobs, and their order of execution
   - test
