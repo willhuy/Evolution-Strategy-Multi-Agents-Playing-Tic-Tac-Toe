@@ -58,7 +58,14 @@ class ESAgent:
 
         # Get the indexes of all the legal cells
         legal_cell_idxs = np.nonzero(mask)[0]   # [0] because nonzero return a tuple
-        best_val   = y[legal_cell_idxs].max()   # Get
+
+        epsilon = 0.1
+        # probabibilty of making a random move
+        if np.random.rand() < epsilon:
+            return int(np.random.choice(legal_cell_idxs))
+        
+        # Get the best move possbiel
+        best_val   = y[legal_cell_idxs].max()
         best_moves = legal_cell_idxs[y[legal_cell_idxs] == best_val]
 
         return int(np.random.choice(best_moves))
